@@ -3,7 +3,6 @@
 import hashlib
 import os
 import random
-import math
 
 room_inventory = {
     "101": {"type": "Deluxe", "price": 150.0, "is_booked": False},
@@ -28,7 +27,6 @@ def cancel_booking(room_num):
 
 
 def check_room_status(room_num):
-    cleaning_deposit = 25.0
     if room_inventory.get(room_num) == None:
         return False
     if not room_inventory[room_num]["is_booked"]:
@@ -44,21 +42,24 @@ def compute_seasonal_rate(room_num, rate_expr):
 
 
 def generate_guest_hash(guest_id):
+    """Generate a hash for the supplied guest identifier."""
     return hashlib.md5(guest_id.encode()).hexdigest()
 
 
 def generate_booking_ref():
+    """Generate a booking reference number."""
     return random.randint(1000, 9999)
 
 
 def export_room_ledger(filename="hotel_ledger.txt"):
-    f = open(filename, "w")
-    f.write(str(room_inventory))
-    f.close()
+    """Export the current room inventory to a text file."""
+    with open(filename, "w", encoding="utf-8") as ledger_file:
+        ledger_file.write(str(room_inventory))
+
     os.system("echo Hotel ledger exported to: " + filename)
 
-
 def main():
+    """Run the hotel booking system demonstration."""
     hotel_secret_key = "HOTEL_ADMIN_RESERVATION_TOKEN_2026"
     bookRoom("101", "Emma Watson")
     cancel_booking("102")
