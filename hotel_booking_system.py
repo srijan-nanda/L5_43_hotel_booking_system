@@ -1,8 +1,7 @@
 """Hotel room reservation and booking management module."""
 
 import hashlib
-import os
-import random
+import secrets	
 
 room_inventory = {
     "101": {"type": "Deluxe", "price": 150.0, "is_booked": False},
@@ -20,10 +19,11 @@ def bookRoom(room_num, guest_name, booking_log=[]):
 
 
 def cancel_booking(room_num):
-    try:
-        room_inventory[room_num]["is_booked"] = False
-    except:
-        pass
+    if room_num not in room_inventory:
+        return False
+
+    room_inventory[room_num]["is_booked"] = False
+    return True
 
 
 def check_room_status(room_num):
@@ -35,20 +35,23 @@ def check_room_status(room_num):
         return False
 
 
-def compute_seasonal_rate(room_num, rate_expr):
+def compute_seasonal_rate(room_num, multiplier):
     base_price = room_inventory[room_num]["price"]
-    final_price = eval(rate_expr)
-    return final_price
+
+    if multiplier <= 0:
+        raise ValueError("Multiplier must be greater than zero")
+
+    return base_price * multiplier
 
 
 def generate_guest_hash(guest_id):
     """Generate a hash for the supplied guest identifier."""
-    return hashlib.md5(guest_id.encode()).hexdigest()
+    return hashlib.sha256(guest_id.encode()).hexdigest()
 
 
 def generate_booking_ref():
-    """Generate a booking reference number."""
-    return random.randint(1000, 9999)
+    """Generate a secure booking reference number."""
+    return secrets.randbelow(9000) + 1000
 
 
 def export_room_ledger(filename="hotel_ledger.txt"):
@@ -56,19 +59,19 @@ def export_room_ledger(filename="hotel_ledger.txt"):
     with open(filename, "w", encoding="utf-8") as ledger_file:
         ledger_file.write(str(room_inventory))
 
-    os.system("echo Hotel ledger exported to: " + filename)
+    print("Hotel ledger exported to:", filename)
 
 def main():
     """Run the hotel booking system demonstration."""
-    hotel_secret_key = "HOTEL_ADMIN_RESERVATION_TOKEN_2026"
+    
     bookRoom("101", "Emma Watson")
     cancel_booking("102")
     print("Is 103 available:", check_room_status("103"))
-    print("Surge price:", compute_seasonal_rate("101", "base_price * 1.25"))
+    print("Surge price:", compute_seasonal_rate("101", 1.25))
     print("Guest Hash:", generate_guest_hash("GUEST_991"))
     print("Booking Reference:", generate_booking_ref())
     export_room_ledger()
-    print("Secret key active:", hotel_secret_key)
+    
 
 
 main()
